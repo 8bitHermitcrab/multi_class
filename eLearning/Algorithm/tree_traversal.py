@@ -44,3 +44,19 @@ print()
 in_order(tree['A'])
 print()
 post_order(tree['A'])
+
+'''
+[예시 입력]
+7
+A B C
+B D E
+C F G
+D None None
+E None None
+F None None
+G None None
+[예시 출력]
+A B D E C F G 
+D B E A F C G 
+D E B F G C A 
+'''
