@@ -33,4 +33,8 @@ browser.get('http://daum.net')
 
 query = browser.find_element_by_name('q')
 query.send_keys('멀티캠퍼스')
-query.send_keys(Keys.ENTER)
+# query.send_keys(Keys.ENTER)
+
+browser.find_element_by_xpath('//*[@id="daumSearch"]/fieldset/div/div/button[2]').click()
+
+browser.quit()
