@@ -38,11 +38,11 @@ class FlightTicket():
             WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, 
                 '//*[@id="__next"]/div/div[1]/div[4]/div/div/div[2]/div[2]/button[1]'))).click()
 
-            time.slee(2)
+            time.sleep(2)
             
             month = int(self.config['DEPARTURE']['MONTH'])
             day = int(self.config['DEPARTURE']['DAY'])
-            print(month, day)
+            # print(month, day)
 
             weekno, weekday = self.getWeekNo(month, day)
             # print(weekno, weekday)
@@ -61,10 +61,11 @@ class FlightTicket():
         url = 'https://flight.naver.com/'
         self.browser.get(url)
 
+        # 웹 최대 10초 기다림
         elem = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div/div[1]/div[4]/div/div/div[2]/div[2]/button[1]'))).click()
 
         elem.click()
-        time.slee(2)
+        time.sleep(2)
 
 
 
