@@ -64,7 +64,7 @@ class FlightTicket():
     def __init__(self):
 
         self.config = configparser.ConfigParser()
-        self.config.read('./config.ini')
+        self.config.read('/Users/kij/workspace/220208/config.ini')
 
         chrome_options = webdriver.ChromeOptions()
         self.browser = webdriver.Chrome(
