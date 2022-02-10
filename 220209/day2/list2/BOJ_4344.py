@@ -11,7 +11,7 @@ for _ in range(n):
         if score > avg:
             # 평균 이상인 학생 수
             avg_num += 1
-            print(avg_num)
+            # print(avg_num)
 
     rate = avg_num/nums[0] * 100
     print(f'{rate:.3f}%')
