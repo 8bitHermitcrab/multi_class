@@ -2,6 +2,7 @@
 
 # 전체 좌표
 square = [[0] * 101 for _ in range(101)]
+# 100으로 해도 된다.
 
 # 입력값 x1 y1 x2 y2
 for _ in range(4):
