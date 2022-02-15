@@ -1,4 +1,5 @@
 # 스도쿠 채점
+# dfs
 
 # 맨 처음에는 각 테스트 케이스의 개수가 주어진다.
 T = int(input())
@@ -12,7 +13,7 @@ for n in range(9):
     for i in range(3*n, (3*n+3)):
         for j in range(3*n, (3*n+3)):
             if lines[i][j] in stoku:
-                stoku = stoku.pop(lines[i][j])
+                stoku.pop(lines[i][j])
                 result = 'CORRECT'
                 if stoku == 0:
                     continue
