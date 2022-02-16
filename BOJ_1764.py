@@ -1,6 +1,24 @@
 # 듣보잡
 N, M = map(int, input().split())
 
+a = {input() for _ in range(N)}
+b = {input() for _ in range(M)}
+
+# print(f'a = {a}')
+# print(f'b = {b}')
+# print(f'list(a & b) = {list(a & b)}')
+# result = sorted(list(a & b))
+# print(f'result = {result}')
+result = sorted(a & b)
+print(len(result))
+
+for i in result:
+    print(i)
+
+
+'''
+N, M = map(int, input().split())
+
 a = set()
 b = set()
 
@@ -19,7 +37,7 @@ print(len(result))
 
 for i in result:
     print(i)
-
+'''
 
 '''
 # n_value = [input() for _ in range(N)]
