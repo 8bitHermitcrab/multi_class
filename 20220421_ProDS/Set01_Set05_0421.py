@@ -28,11 +28,17 @@ Created on 2021
 # =============================================================================
 # =============================================================================
 
-import numpy as np
+
+
 import pandas as pd
+import numpy as np
 
-data1 = pd.read_csv('/Users/kij/Downloads/Dataset/DataSet_01.csv')
+data1 = pd.read_csv('//Users/kij/workspace/20220421_ProDS/Dataset/DataSet_01.csv')
+data1.info()
+data1.columns
+# ['TV', 'Radio', 'Social_Media', 'Influencer', 'Sales']
 
+data1.values  # numpy
 
 #%%
 
@@ -40,7 +46,14 @@ data1 = pd.read_csv('/Users/kij/Downloads/Dataset/DataSet_01.csv')
 # 1. 데이터 세트 내에 총 결측값의 개수는 몇 개인가? (답안 예시) 23
 # =============================================================================
 
+# 결측치가 포함된 셀의 수
+data1.isna().sum().sum()
 
+# 답: 26
+
+# [참고] 
+# 결측치가 포함된 행의 수
+data1.isnull().any(axis=1).sum()
 
 
 #%%
@@ -51,13 +64,22 @@ data1 = pd.read_csv('/Users/kij/Downloads/Dataset/DataSet_01.csv')
 # - 매출액과 가장 강한 상관관계를 가지고 있는 채널의 상관계수를 소수점 5번째
 # 자리에서 반올림하여 소수점 넷째 자리까지 기술하시오. (답안 예시) 0.1234
 # =============================================================================
+var_list=['TV', 'Radio', 'Social_Media', 'Sales']
+q2_corr=data1[var_list].corr().drop('Sales')['Sales'].abs()
 
 
+q2_corr.max() # 최대값
+q2_corr.idxmax() # 최대값이 있는 인덱스명
+q2_corr.argmax()  # 최대값이 있는 위치번호
+q2_corr.nlargest(2).index
 
+#  채널의 상관계수를 소수점 5번째
+# 자리에서 반올림하여 소수점 넷째 자리까지 기술
+round(q2_corr.max(), 4)
 
+# 답: 0.9995
 
-
-
+# np.round, np.floor(1.123456 * 100)/100, np.ceil, np.trunc(int)
 #%%
 
 # =============================================================================
@@ -67,7 +89,6 @@ data1 = pd.read_csv('/Users/kij/Downloads/Dataset/DataSet_01.csv')
 # - 분석 시 결측치가 포함된 행은 제거한 후 진행하며, 회귀계수는 소수점 넷째 자리
 # 이하는 버리고 소수점 셋째 자리까지 기술하시오. (답안 예시) 0.123
 # =============================================================================
-
 from sklearn.linear_model import LinearRegression
 from statsmodels.formula.api import ols
 from statsmodels.api import OLS, add_constant # 상수항 추가
@@ -113,10 +134,7 @@ lm2.pvalues.index[lm2.pvalues < 0.05]
 lm3 = ols('Sales~TV-1', q3).fit()
 lm3.summary()
 
-
-
 # 3. OLS : 상수항 미포함
-
 xx = add_constant(q3[var_list])
 lm4 = OLS(q3['Sales'], xx).fit()
 
@@ -124,9 +142,7 @@ lm4.summary()
 
 # 범주형
 var_list = q3.columns.drop('Sales')
-
 form2 = 'Sales~' + '+'.join(var_list)
-
 
 lm5 = ols(form2, q3).fit()
 
@@ -155,7 +171,7 @@ q3.Influencer.unique()
 import pandas as pd
 import numpy as np
 
-data2 = pd.read_csv('/Users/kij/Downloads/Dataset/Dataset_02.csv')
+data2 = pd.read_csv('/Users/kij/workspace/20220421_ProDS/Dataset/Dataset_02.csv')
 data2.columns
 # ['Age', 'Sex', 'BP', 'Cholesterol', 'Na_to_K', 'Drug']
 
@@ -166,17 +182,11 @@ data2.columns
 # 환자의 전체에 대비한 비율이 얼마인지 소수점 네 번째 자리에서 반올림하여 소수점 셋째
 # 자리까지 기술하시오. (답안 예시) 0.123
 # =============================================================================
-
 q1 = data2[['Sex', 'BP', 'Cholesterol']].value_counts(normalize=True)
 q1.index
 q1[('F', 'HIGH', 'NORMAL')]
 
 # 답: 0.105
-
-
-
-
-
 
 #%%
 
@@ -195,9 +205,7 @@ q1[('F', 'HIGH', 'NORMAL')]
 # (답안 예시) 3, 1.23456
 # =============================================================================
 
-
 # 1. 변수 생성
-
 q2 = data2.copy()
 # np.where(조건)
 # np.where(조건[True/False]), 참인 경우 실행[함수(식), 상수, 시리즈], 거짓인 경우 실행)
@@ -230,8 +238,22 @@ for i in var_list:
     pvalue = chi_out[1]
     q2_out.append([i, pvalue])
 
+q2_out = pd.DataFrame(q2_out,columns=['var', 'pvalue'])
 
+q2_out[q2_out.pvalue < 0.05]
+(q2_out.pvalue < 0.05).sum()
+len(q2_out[q2_out.pvalue < 0.05])
 
+q2_out2 = q2_out[q2_out.pvalue < 0.05]
+q2_out2.pvalue.max()
+# 답 : 4, 0.00070
+
+# [참고]
+# H0 : 두 변수는 독립이다
+# H1 : 두 변수는 독립이 아니다(상관이 있다)
+# 평가 : 유의수준 체크
+# 유의수준 0.05 하에서 p-value가 유의수준보다 작은지 확인, 유의수준보다 작으면 귀무가설 기각,
+# 즉, 상관이 있다는 의미
 
 #%%
 
@@ -247,18 +269,27 @@ for i in var_list:
 # 12.345
 # =============================================================================
 
+# 1. 변수 변환
+q3 = data2.copy()
+q3['Sex_cd'] = np.where(q3.Sex =='M', 0, 1)
+q3['BP_cd'] = np.where(q3.BP == 'LOW', 0, 
+            np.where(q3.BP == 'NORMAL', 1, 2))
+q3['Ch_cd'] = np.where(q3.Cholesterol == 'NORMAL', 0, 1)
 
+# 2. 의사결정나무 수행
+from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 
+var_list = ['Age', 'Na_to_K', 'Sex_cd', 'BP_cd', 'Ch_cd']
 
+dt = DecisionTreeClassifier().fit(q3[var_list], q3['Drug'])
 
+plot_tree(dt, max_depth=2, feature_names=var_list, 
+          class_names=list(q3.Drug.unique()),
+          precision=3, fontsize=7)
 
+print(export_text(dt, feature_names=var_list, decimals=3))
 
-
-
-
-
-
-
+# 답: Na_to_K, 14.829
 
 
 #%%
@@ -287,8 +318,13 @@ for i in var_list:
 # =============================================================================
 # =============================================================================
 
+import pandas as pd
+import numpy as np
 
-
+data3 = pd.read_csv('/Users/kij/workspace/20220421_ProDS/Dataset/Dataset_03.csv')
+data3.columns
+# ['long_hair', 'forehead_width_cm', 'forehead_height_cm', 'nose_wide',
+#   'nose_long', 'lips_thin', 'distance_nose_to_lip_long', 'gender']
 #%%
 
 # =============================================================================
@@ -297,14 +333,20 @@ for i in var_list:
 # 정의할 때, 이상치에 해당하는 데이터는 몇 개인가? (답안 예시) 10
 # =============================================================================
 
+q1 = data3.copy()
+q1['forehead_ratio'] = q1['forehead_width_cm'] / q1['forehead_height_cm']
 
+xbar = q1['forehead_ratio'].mean()
+std = q1['forehead_ratio'].std()
 
+# 이상치 판정 구간, 하한(LB), 상한(UB)
+LB = xbar - (3 * std)
+UB = xbar + (3 * std)
 
+# 이상치 판정
+len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 
-
-
-
-
+# 답: 3
 
 #%%
 
@@ -317,8 +359,15 @@ for i in var_list:
 # 않을 경우 N으로 답하시오. (답안 예시) 1.234, Y
 # =============================================================================
 
+# [단일 모집단] -> 단일 표본
+# 1. 일표본 t 검정: ttest_1samp
 
+# [복수 모집단] - 각 모집단별로 표본 추출
+# 1. 표본의 수가 2개인 경우:
+# (1) 독립인 이표본 t 검정
+# (2) 대응인 이표본 t 검정
 
+# 2. 표본의 수가 3개 이상인 경우 : 분산분석(ANOVA)
 
 
 
