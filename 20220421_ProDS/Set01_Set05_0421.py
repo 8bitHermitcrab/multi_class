@@ -364,18 +364,40 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 
 # [복수 모집단] - 각 모집단별로 표본 추출
 # 1. 표본의 수가 2개인 경우:
-# (1) 독립인 이표본 t 검정
-# (2) 대응인 이표본 t 검정
+# (1) 독립인 이표본 t 검정: ttest_ind
+# (2) 대응인 이표본 t 검정: ttest_rel
 
 # 2. 표본의 수가 3개 이상인 경우 : 분산분석(ANOVA)
 
+# H0: 성별 간에 평균 차이가 없다 mu(남) == mu(여) => mu(남) - mu(여) = 0
+# H1: 성별 간에 평균 차이가 있다 mu(남) != mu(여)
 
+gr_m = q1[q1.gender == 'Male']['forehead_ratio']
+gr_f = q1[q1.gender == 'Female']['forehead_ratio']
 
+from scipy.stats import ttest_ind, bartlett, levene
 
+# 1. 등분산검정 수행 => 이분산을 가정하고 수행 생략
 
+bartlett(gr_m, gr_f)
+# H0: 등분산이다
+# H1: 이분산이다
+# => 결론: 이분산
 
+# 2. ttest 수행
+q2_out = ttest_ind(gr_m, gr_f, equal_var=False)
 
+# 3. 판정 : 유의수준 확인 (신뢰수준 99% -> 0.01)
+dir(q2_out)
 
+# 검정통계량의 추정치는 절대값을 취한 후 소수점 셋째 자리까지 반올림하여 기술
+round(abs(q2_out.statistic), 3) # 2.999
+
+# 신뢰수준 99%에서 양측 검정을 수행하고 결과는 귀무가설 기각의 경우 Y로, 그렇지
+# 않을 경우 N으로 답
+q2_out.pvalue < 0.01 # Y
+
+# 답: 2.999, Y
 
 #%%
 
@@ -399,18 +421,34 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 # train_test_split 의 random_state = 123
 # =============================================================================
 
+# 1. 데이터를 7대 3으로 나누어 각각 Train과 Test set로 사용(seed는 123)
 
+from sklearn.model_selection import train_test_split
 
+train, test = train_test_split(data3, test_size=0.3, random_state=123)
 
+# 2. 입력 변수 선정
+var_list = train.columns.drop('gender')
 
+# 3. Test dataset를 사용하여 예측을 수행하고 정확도를
+# 평가한다. 이 때 임계값은 0.5를 사용한다.
+# Male의 Precision 값을 소수점 둘째 자리까지 반올림하여 기술
 
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import precision_score, classification_report
 
+logit = LogisticRegression().fit(train[var_list], train['gender'])
+pred_class = logit.predict(test[var_list])
+pred_pr = logit.predict_proba(test[var_list])
 
+# 임계값이 0.8인 경우
+pred_class2 = np.where(pred_pr[:,1] >= 0.8, 'Male')
 
+round(precision_score(test['gender'], pred_class, pos_label='Male'), 2)
 
+# 답: 0.96
 
-
-
+print(round(classification_report(test['gender'], pred_class))
 
 #%%
 
@@ -443,6 +481,14 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 
 #%%
 
+import pandas as pd
+import numpy as np
+
+data4 = pd.read_csv('/Users/kij/workspace/20220421_ProDS/Dataset/Dataset_04.csv')
+data4.columns
+
+# ['LOCATION', 'SUBJECT', 'TIME', 'Value']
+
 # =============================================================================
 # 1.한국인의 1인당 육류 소비량이 해가 갈수록 증가하는 것으로 보여 상관분석을 통하여
 # 확인하려고 한다. 
@@ -452,11 +498,16 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 # (답안 예시) 0.55
 # =============================================================================
 
+# 1. 데이터 파일로부터 한국 데이터만 추출
+q1 = data4[data4.LOCATION == 'KOR']
 
+# 2. 년도별 육류 소비량 합계
+tab = q1.groupby('TIME')['Value'].sum().reset_index()
 
+# 3. TIME과 Value간의 상관분석을 수행
+round(tab.corr()['TIME']['Value'], 2)
 
-
-
+# 답: 0.96
 
 #%%
 
@@ -468,8 +519,38 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 # 적으시오. (알파벳 순서) (답안 예시) BEEF, PIG, POULTRY, SHEEP
 # =============================================================================
 
+# 1. 한국, 일본 데이터 필터링
+q2 = data4[data4.LOCATION.isin(['KOR', 'JPN'])]
 
+# 2. 육류 종류 추출
+sub_list = q2.SUBJECT.unique()
+# ['BEEF', 'PIG', 'POULTRY', 'SHEEP']
 
+# 3. 육류 종류별로 연도를 기준으로 쌍이 되도록 데이터를 설계
+# 4. 육류 종류별로 대응 t 검정 수행(pvalue 수집 -> 육류 종류 도출)
+# 귀무가설을 기각하지 않는
+from scipy.stats import ttest_rel
+
+q2
+for i in sub_list:
+    temp = q2[q2.SUBJECT == i]
+    tab = pd.pivot_table(temp, index='TIME', 
+                         columns='LOCATION',
+                         values='Value',
+                         aggfunc='mean').dropna()
+    ttest_out = ttest_rel(tab['KOR'], tab['JPN'])
+    pvalue = ttest_out.pvalue
+    q2_out.append([i, pvalue])
+    
+# 5. 연도별 소비량 차이가 없는 것으로 판단할 수 있는 육류 종류
+    
+
+# [참고]
+temp = q2[q2.SUBJECT == 'BEEF']
+tab = pd.pivot_table(temp, index='TIME',
+                     columns='LOCATION',
+                     values='Value',
+                     aggfunc='mean').dropna()
 
 
 
@@ -484,16 +565,40 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 # 
 # =============================================================================
 
+# 1. 한국만 포함한 데이터에서
+q3 = data4[data4.LOCATION == 'KOR']
 
+# 2. 육류 종류
+sub_list = q3.SUBJECT.unique()
 
+# 3. 육류 종류별로 회귀분석
+# - 반복문, 결정계수, MAPE
+from sklearn.linear_model import LinearRegression
 
+q3_out = []
+for i in sub_list:
+    temp = q3[q3.SUBJECT == i]
+    lm = LinearRegression().fit(temp[['TIME']], temp['Value']) # 입력 데이터 dim이 2차
+    r2 = lm.score(temp[['TIME']], temp['Value'])
+    # MAPE = = Σ ( | y - y ̂ | / y ) * 100/n 
+    pred = lm.predict(temp[['TIME']])
+    mape = (abs(temp['Value'] - pred) / temp['Value']).sum() * 100 / len(temp)    
+    q3_out.append([i, r2, mape])
+    
+# 4. 가장 높은 결정계수를 가진 모델의
+# 학습오차 중 MAPE를 반올림하여 소수점 둘째 자리까지 기술
 
+q3_out = pd.DataFrame(q3_out, columns=['sub', 'r2', 'mape'])
 
+round(q3_out.loc[q3_out.r2.idxmax(), 'mape'], 2)
 
-
-
-
-
+# 답: 5.78
+    
+# [참고]
+temp['TIME'].ndim
+temp['TIME'].shape
+temp[['TIME']].ndim
+temp[['TIME']].shape
 
 
 #%%
@@ -542,6 +647,15 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 
 #%%
 
+import pandas as pd
+import numpy as np
+
+data5 = pd.read_csv('/Users/kij/workspace/20220421_ProDS/Dataset/Dataset_05.csv')
+data5.columns
+# ['ID', 'Age', 'Age_gr', 'Gender', 'Work_Experience', 'Family_Size',
+#       'Ever_Married', 'Graduated', 'Profession', 'Spending_Score', 'Var_1',
+#       'Segmentation']
+
 # =============================================================================
 # 1.위의 표에 표시된 데이터 타입에 맞도록 전처리를 수행하였을 때, 데이터 파일 내에
 # 존재하는 결측값은 모두 몇 개인가? 숫자형 데이터와 문자열 데이터의 결측값을
@@ -549,9 +663,9 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 # (String 타입 변수의 경우 White Space(Blank)를 결측으로 처리한다) (답안 예시) 123
 # =============================================================================
 
+data5.isna().sum().sum()
 
-
-
+# 답: 1166
 
 
 #%%
@@ -563,8 +677,17 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 # (답안 예시) 0.2345, N
 # =============================================================================
 
+q2 = data5.dropna()
 
+tab =pd.crosstab(index=q2['Gender'], columns=q2['Segmentation'])
 
+from scipy.stats import chi2_contingency
+
+chi2_out = chi2_contingency(tab)
+
+round(chi2_out[1], 4)
+
+# 답: 0.0031, Y
 
 
 #%%
@@ -586,6 +709,36 @@ len(q1[(q1['forehead_ratio'] < LB) | (q1['forehead_ratio'] > UB)]) # | == or
 # 기술하시오.
 # (답안 예시) 0.12
 # =============================================================================
+
+# Segmentation 값이 A 또는 D인 데이터만 사용
+q3 = q2[q2.Segmentation.isin(['A', 'D'])]
+
+from sklearn.model_selection import train_test_split
+
+# Train대 Test 7대3으로 데이터를 분리한다. (Seed = 123)
+train, test = train_test_split(q3, test_size=0.3, random_state=123)
+
+# 의사결정나무 학습
+from sklearn.tree import DecisionTreeClassifier
+
+var_list = ['Age_gr', 'Gender', 'Work_Experience', 'Family_Size', 
+             'Ever_Married', 'Graduated', 'Spending_Score']
+
+dt = DecisionTreeClassifier(max_depth=7, random_state=123)
+dt.fit(train[var_list], train['Sefmentation'])
+
+# Test 데이터로 평가를     
+# 전체 정확도(Accuracy)를 소수점 셋째 자리 이하는 버리고 소수점 둘째자리까지
+# 기술      
+dt.score(test[var_list], test['Segmentation'])     
+  
+# 답: 0.68
+
+
+
+
+
+
 
 
 
