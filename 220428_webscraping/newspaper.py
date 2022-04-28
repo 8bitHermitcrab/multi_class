@@ -5,6 +5,11 @@ from bs4 import BeautifulSoup
 
 # !pip install newspaper3k
 
+url = 'https://search.naver.com/search.naver'
+params = {
+    'where': 'news',
+    'query': '무역전쟁'
+}
 
 result_list = []
 # (1~3)을 3페이지까지 반복시키기
