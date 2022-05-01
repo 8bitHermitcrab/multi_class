@@ -71,4 +71,20 @@ soup = BeautifulSoup(resp.text)
 # print(data3)
 
 
-print(soup.select('.se-text-paragraph se-text-paragraph-align-center '))
+# print(soup.select('.se-text-paragraph se-text-paragraph-align-center '))
+
+
+b_url = 'https://www.youthcenter.go.kr/youngPlcyUnif/youngPlcyUnifList.do'
+
+# 페이지
+num = 1
+
+params = {
+    'pageIndex': str(num),
+    'trgtJynEmp' : '',
+    'trgtJynEmp' : ''
+}
+
+res_p = requests.get(b_url, params=params)
+soup = BeautifulSoup(res_p.text)
+print(res_p.text)
