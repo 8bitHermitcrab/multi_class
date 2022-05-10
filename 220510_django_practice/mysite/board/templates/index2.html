@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>홈화면</h1>
+    <p>환영합니다. {{name}}님!</p>
+
+    {% if role == 'superuser' %}
+        안녕하세요 supersuser 님.
+    {% elif role == 'staff' %}
+        안녕하세요 staff 님.
+    {% else %}
+        안녕하세요 일반고객님.
+    {% endif %}
+
+    <ul>
+        {% for user in user_list %}
+            <li>{{ user }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
