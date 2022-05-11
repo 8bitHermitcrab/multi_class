@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block contents %}
+    <div class="container">
+        <div class='row'>
+            <h1>{{board.title}}</h1>
+        </div>
+        <div class='row'>
+            <div class='col-12'>
+                <p>{{ board.contents }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

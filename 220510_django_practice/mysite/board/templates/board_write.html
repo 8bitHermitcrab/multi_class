@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block contents %}
+<div class = 'container'>
+    <div class='row'>
+        <div class='col-12'>
+            <h1 class='mt-50'>글쓰기</h1>
+        </div>
+        <form acton='/board/write' method='POST'>
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="exampleFormControlInput1" class="form-label">제목</label>
+                <input type="text" class="form-control" id="exampleFormControlInput1" name='title'>
+            </div>
+            <div class="mb-3">
+                <label for="exampleFormControlTextarea1" class="form-label">내용</label>
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="12" name='content'></textarea>
+          </div>
+
+          <input type='submit' value='제출' class='btn btn-primary' styple:'float'>
+        </form>
+    </div>
+</div>
+{% endblock %}
