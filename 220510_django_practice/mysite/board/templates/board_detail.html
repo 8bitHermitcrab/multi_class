@@ -9,5 +9,10 @@
                 <p>{{ board.contents }}</p>
             </div>
         </div>
+        <ul>
+        {% for comment in comments %}
+            <li>{{comment.contents}}</li>
+        {%endfor%}
+        </ul>
     </div>
 {% endblock %}

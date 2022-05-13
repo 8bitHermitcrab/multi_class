@@ -39,4 +39,5 @@ def board_write(request):
 def board_detail(request, board_id):
     print(board_id)
     board = Board.objects.get(id=board_id)
+    comments = board.comment_list.all()
     return render(request, 'board_detail.html', {'board':None})
